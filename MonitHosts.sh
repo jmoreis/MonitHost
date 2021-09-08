@@ -17,6 +17,13 @@ fi
 ctrl="echo $@"
 nota="** Total de host = $tot_hosts **"
 pass_hosts=$tot_hosts
+
+#Zera o array de interrupções
+for ctd_arr in `seq 1 $pass_hosts`
+do
+    ctd_queda[$ctd_arr]=0
+done
+
 clear
 echo 
 echo "`tput rev;tput bold;tput setaf 6`Monitoramento de Hosts`tput sgr0`"
@@ -35,6 +42,11 @@ do
         done
         if [ $ctd_ver -gt 2 ]
         then
+            if [ "${stathost[$pass_hosts]}" = "1" ]
+            then
+                ctd_queda[$pass_hosts]=$((ctd_queda[$pass_hosts] + 1))
+                stathost[$pass_hosts]="0"
+            fi
             statcolr=3
             statbkg=6
             statmsg="Host ativo  "
@@ -42,6 +54,7 @@ do
             statcolr=6
             statbkg=1
             statmsg="Host inativo"
+            stathost[$pass_hosts]="1"
         fi
         nom_host=`echo $host_info|cut -d":" -f1`
         if [ $pass_hosts -eq $tot_hosts ]
@@ -53,15 +66,15 @@ do
             tput sgr0
             tput setab $bkgdef
             tput setaf 0
-            printf '_%.0s' {1..34}
+            printf '_%.0s' {1..38}
             printf '\n'
         fi
-        printf '|%-19s %10s |\n' "`tput setaf 0`$nom_host" "=>`tput bold;tput setaf $statcolr;tput setab $statbkg` $statmsg `tput sgr0;tput setab $bkgdef;tput setaf 0`"
+        printf '|%-19s %15s |\n' "`tput setaf 0`$nom_host" "=>`tput bold;tput setaf $statcolr;tput setab $statbkg` $statmsg (${ctd_queda[$pass_hosts]}) `tput sgr0;tput setab $bkgdef;tput setaf 0`"
         pass_hosts=$((pass_hosts - 1))
         if [ $pass_hosts -eq 0 ]
         then
             tput setaf 0
-            printf '_%.0s' {1..34}
+            printf '_%.0s' {1..38}
             printf '\n'
             tput sgr0
             pass_hosts=$tot_hosts
